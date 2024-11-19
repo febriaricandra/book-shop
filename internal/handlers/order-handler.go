@@ -65,7 +65,6 @@ func (h *OrderHandler) CreateOrder(c *gin.Context) {
 	order.Address = orderInput.Address
 	order.Phone = orderInput.Phone
 	order.TotalPrice = orderInput.TotalPrice
-	order.UserId = orderInput.UserId
 
 	orderId, err := h.orderService.CreateOrder(&order)
 	if err != nil {
