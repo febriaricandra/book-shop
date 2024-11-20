@@ -39,14 +39,6 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": err.Error(),
-			})
-			c.Abort()
-			return
-		}
-
 		user, err := userRepo.GetUserByEmail(claims.Email)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{

@@ -8,6 +8,10 @@
 - Run `go test -v ./tests/features` in the project root directory
 - You should see the test results in the terminal
 
+# Running on Docker
+- Run `docker build -t book-shop .` in the project root directory
+- Run `docker run -p 8080:8080 book-shop` in the project root directory
+- Run `docker run --name book-shop-container -p 8080:8080 book-shop` in the project root directory
 
 # API Endpoints Documentation
 
