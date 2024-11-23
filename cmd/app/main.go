@@ -59,20 +59,20 @@ func main() {
 	router := gin.Default()
 	router.Static("/uploads", "./uploads")
 
-	//init route
-	routers.BookRouter(router, bookHandler)
-	routers.UserRouter(router, userHandler)
-	routers.OrderRouter(router, orderHandler)
-
 	//CORs configuration
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowHeaders:     []string{"*", "Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+
+	//init route
+	routers.BookRouter(router, bookHandler)
+	routers.UserRouter(router, userHandler)
+	routers.OrderRouter(router, orderHandler)
 
 	router.Use(gin.Logger())
 
