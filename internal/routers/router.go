@@ -32,6 +32,12 @@ func UserRouter(router *gin.Engine, h *handlers.UserHandler) {
 		public.POST("/login", h.Login)
 		public.POST("/refresh", h.Refresh)
 	}
+
+	private := router.Group("/api")
+	private.Use(middlewares.AuthMiddleware())
+	{
+		private.GET("/profile", h.Profile)
+	}
 }
 
 func OrderRouter(router *gin.Engine, h *handlers.OrderHandler) {

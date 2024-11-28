@@ -56,10 +56,17 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		info := map[string]interface{}{
+			"email":   user.Email,
+			"name":    user.Name,
+			"isAdmin": user.IsAdmin,
+		}
+
 		c.Set("Claims", claims)
 		c.Set("userId", user.ID)
 		c.Set("email", user.Email)
 		c.Set("isAdmin", user.IsAdmin)
+		c.Set("info", info)
 		c.Next()
 	}
 }

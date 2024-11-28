@@ -75,3 +75,9 @@ func (h *UserHandler) Refresh(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"access_token": accessToken})
 }
+
+func (h *UserHandler) Profile(c *gin.Context) {
+	// implement the handler
+	info, _ := c.Get("info")
+	c.JSON(http.StatusOK, gin.H{"user": info})
+}
