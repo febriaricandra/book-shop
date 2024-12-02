@@ -111,7 +111,7 @@ func (h *BookHandler) CreateBook(c *gin.Context) {
 	}
 
 	// Generate the public URL for the uploaded file
-	book.CoverImage = fmt.Sprintf("%s/%s/%s", h.EndPoint, h.Bucket, newFileName)
+	book.CoverImage = fmt.Sprintf("%s/%s", h.EndPoint, newFileName)
 
 	// Save the book record in the database
 	if err := h.bookService.CreateBook(&book); err != nil {
