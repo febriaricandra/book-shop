@@ -3,9 +3,13 @@ package main
 import (
 	"fmt"
 	"log/slog"
+	"os"
 
 	"time"
 
+	cfg "github.com/febriaricandra/book-shop/config"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/febriaricandra/book-shop/internal/handlers"
 	"github.com/febriaricandra/book-shop/internal/models"
 	"github.com/febriaricandra/book-shop/internal/repositories"
@@ -17,10 +21,18 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var R2Client *s3.Client
+
 func init() {
 	err := godotenv.Load(".env")
 	if err != nil {
 		slog.Error("Error loading .env file")
+	}
+
+	R2Client, err = cfg.InitR2Client()
+	if err != nil {
+		slog.Error("Error initializing R2 client", "error", err)
+		panic(fmt.Sprintf("failed to initialize R2 client: %v", err))
 	}
 
 	if err := db.DatabaseConnection(); err != nil {
@@ -52,12 +64,12 @@ func main() {
 
 	// Initialize handlers
 	orderHandler := handlers.NewOrderHandler(orderService)
-	bookHandler := handlers.NewBookHandler(bookService)
+	bookHandler := handlers.NewBookHandler(bookService, R2Client, "bookshop", os.Getenv("ENDPOINT_URL"))
 	userHandler := handlers.NewUserHandler(userService)
 
 	// entry point of the application
 	router := gin.Default()
-	router.Static("/uploads", "./uploads")
+	// router.Static("/uploads", "./uploads")
 
 	//CORs configuration
 	router.Use(cors.New(cors.Config{

@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/febriaricandra/book-shop/internal/models"
 	"github.com/febriaricandra/book-shop/internal/services"
 	"github.com/febriaricandra/book-shop/pkg/db"
@@ -16,10 +18,13 @@ import (
 
 type BookHandler struct {
 	bookService *services.BookService
+	R2Client    *s3.Client
+	Bucket      string
+	EndPoint    string
 }
 
-func NewBookHandler(bookService *services.BookService) *BookHandler {
-	return &BookHandler{bookService: bookService}
+func NewBookHandler(bookService *services.BookService, R2Client *s3.Client, Bucket string, Endpoint string) *BookHandler {
+	return &BookHandler{bookService: bookService, R2Client: R2Client, Bucket: Bucket, EndPoint: Endpoint}
 }
 
 func (h *BookHandler) HomeBooks(c *gin.Context) {
@@ -79,14 +84,25 @@ func (h *BookHandler) CreateBook(c *gin.Context) {
 	extension := filepath.Ext(file.Filename) //get the file extension
 	newFileName := fmt.Sprintf("%s%s", uuid.New().String(), extension)
 
-	filePath := filepath.Join("uploads", newFileName)
+	src, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": false})
+		return
+	}
+	defer src.Close()
 
-	if err := c.SaveUploadedFile(file, filePath); err != nil {
+	_, err = h.R2Client.PutObject(c, &s3.PutObjectInput{
+		Bucket: aws.String(h.Bucket),
+		Key:    aws.String(newFileName),
+		Body:   src,
+	})
+
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": false})
 		return
 	}
 
-	book.CoverImage = filePath
+	book.CoverImage = fmt.Sprintf("%s/%s/%s", h.EndPoint, h.Bucket, newFileName)
 
 	if err := db.DB.Create(&book).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "status": false})

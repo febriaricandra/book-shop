@@ -87,7 +87,7 @@
     "description": "The Great Gatsby is a 1925 novel by American writer F. Scott Fitzgerald.",
     "category": "Novel",
     "trending": true,
-    "cover_image": "https://images-na.ssl-images-amazon.com/images/I/51Zymoq7UnL._AC_SY400_.jpg",
+    "cover_image": "IMGES.JPEG",
     "old_price": 10.99,
     "new_price": 9.99
 }
@@ -96,21 +96,20 @@
 ```json
 {
     "data": {
-        "id": 10,
-        "created_at": "2024-11-19T15:14:03.906+07:00",
-        "updated_at": "2024-11-19T15:14:03.906+07:00",
+        "id": 12,
+        "created_at": "2024-12-02T16:34:02.877+07:00",
+        "updated_at": "2024-12-02T16:34:02.877+07:00",
         "deleted_at": null,
-        "title": "Hello World: new world!",
+        "title": "JAMET SEDOLOR",
         "description": "lorem ipsum dolor amet",
         "category": "Popular",
         "trending": true,
-        "cover_image": "uploads/1da8d4b3-523b-408e-b634-cba959f28cd9.JPEG",
+        "cover_image": "https://cloudflare.r2.dev/bookshop/2aaf0b77-fd69-48bf-a5fa-b7b363843c36.JPEG",
         "old_price": 12.02,
         "new_price": 11.04
     },
     "message": "Book created successfully",
     "status": true
-}
 ```
 
 - Register a user
