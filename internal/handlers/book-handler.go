@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -73,43 +74,52 @@ func (h *BookHandler) CreateBook(c *gin.Context) {
 	book.OldPrice, _ = strconv.ParseFloat(c.PostForm("old_price"), 64)
 	book.NewPrice, _ = strconv.ParseFloat(c.PostForm("new_price"), 64)
 
-	//hamdle file upload
+	// Handle file upload
 	file, err := c.FormFile("cover_image")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": false})
 		return
 	}
 
-	//Generate a unique file name using uuid and keep the original extension
-	extension := filepath.Ext(file.Filename) //get the file extension
-	newFileName := fmt.Sprintf("%s%s", uuid.New().String(), extension)
-
-	src, err := file.Open()
+	// Open the uploaded file
+	fileData, err := file.Open()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": false})
 		return
 	}
-	defer src.Close()
+	defer fileData.Close()
 
-	_, err = h.R2Client.PutObject(c, &s3.PutObjectInput{
-		Bucket: aws.String(h.Bucket),
-		Key:    aws.String(newFileName),
-		Body:   src,
+	// Get the Content-Type from the file header
+	fileContentType := file.Header.Get("Content-Type")
+	slog.Info("Content Type", "content_type", fileContentType)
+
+	// Generate a unique file name
+	extension := filepath.Ext(file.Filename)
+	newFileName := fmt.Sprintf("%s%s", uuid.New().String(), extension)
+
+	// Upload the file to R2 with ContentType
+	_, err = h.R2Client.PutObject(c.Request.Context(), &s3.PutObjectInput{
+		Bucket:      aws.String(h.Bucket),
+		Key:         aws.String(newFileName),
+		Body:        fileData,
+		ContentType: aws.String(fileContentType), // Set the Content-Type explicitly
 	})
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": false})
-		return
-	}
-
-	book.CoverImage = fmt.Sprintf("%s/%s/%s", h.EndPoint, h.Bucket, newFileName)
-
-	if err := db.DB.Create(&book).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "status": false})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": true, "message": "Book created successfully", "data": book})
+	// Generate the public URL for the uploaded file
+	book.CoverImage = fmt.Sprintf("%s/%s/%s", h.EndPoint, h.Bucket, newFileName)
+
+	// Save the book record in the database
+	if err := h.bookService.CreateBook(&book); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "status": false})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"status": true, "message": "Book created successfully", "data": book})
 }
 
 func (h *BookHandler) GetBookById(c *gin.Context) {
