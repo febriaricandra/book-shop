@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/febriaricandra/book-shop/internal/models"
 	"github.com/febriaricandra/book-shop/internal/services"
+	"github.com/febriaricandra/book-shop/internal/utils"
 	"github.com/febriaricandra/book-shop/pkg/db"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -35,34 +36,56 @@ func (h *BookHandler) HomeBooks(c *gin.Context) {
 
 	//convert the page and page size to int
 	page, err := strconv.Atoi(pageStr)
-	if err != nil {
+	if err != nil || page < 1 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page number", "status": false})
 		return
 	}
 
 	page_size, err := strconv.Atoi(pageSizeStr)
-	if err != nil {
+	if err != nil || page_size < 1 || page_size > 100 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page size", "status": false})
 		return
 	}
 
-	topSellerBooks, recommendedBooks, err := h.bookService.GetHomeBooks(page, page_size)
+	topSellerBooks, recommendedBooks, total, err := h.bookService.GetHomeBooks(page, page_size)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "status": false})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"topSellerBooks": topSellerBooks, "recommendedBooks": recommendedBooks, "status": true})
+	//Calculate the total pages
+	totalItems, totalPages := utils.CalculatePagination(total, page, page_size)
+
+	c.JSON(http.StatusOK, gin.H{"topSellerBooks": topSellerBooks, "recommendedBooks": recommendedBooks, "page": page, "page_size": page_size, "total_items": totalItems, "total_pages": totalPages, "status": true})
 }
 
 func (h *BookHandler) GetBooks(c *gin.Context) {
-	books, err := h.bookService.GetAllBooks()
+	pageStr := c.DefaultQuery("page", "1")
+	pageSizeStr := c.DefaultQuery("page_size", "10")
+
+	//convert the page and page size to int
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page number", "status": false})
+		return
+	}
+
+	page_size, err := strconv.Atoi(pageSizeStr)
+	if err != nil || page_size < 1 || page_size > 100 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page size", "status": false})
+		return
+	}
+
+	books, totalBook, err := h.bookService.GetAllBooks(page, page_size)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "status": false})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": books, "status": true})
+	//Calculate the total pages
+	totalItems, totalPages := utils.CalculatePagination(totalBook, page, page_size)
+
+	c.JSON(http.StatusOK, gin.H{"data": books, "page": page, "page_size": page_size, "total_items": totalItems, "total_pages": totalPages, "status": true})
 }
 
 func (h *BookHandler) CreateBook(c *gin.Context) {

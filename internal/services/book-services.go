@@ -21,8 +21,8 @@ func (s *BookService) GetBookById(id uint) (*models.Book, error) {
 	return s.bookRepo.GetBookById(id)
 }
 
-func (s *BookService) GetAllBooks() ([]models.Book, error) {
-	return s.bookRepo.GetAllBooks()
+func (s *BookService) GetAllBooks(page, pageSize int) ([]models.Book, int, error) {
+	return s.bookRepo.GetAllBooks(page, pageSize)
 }
 
 func (s *BookService) UpdateBook(book *models.Book) error {
@@ -33,6 +33,6 @@ func (s *BookService) DeleteBook(id uint) error {
 	return s.bookRepo.DeleteBook(id)
 }
 
-func (s *BookService) GetHomeBooks(page, pageSize int) ([]models.Book, []models.Book, error) {
+func (s *BookService) GetHomeBooks(page, pageSize int) ([]models.Book, []models.Book, int, error) {
 	return s.bookRepo.GetHomeBooks(page, pageSize)
 }
