@@ -21,8 +21,8 @@ func (s *OrderService) GetOrderById(id uint) (*models.Order, error) {
 	return s.orderRepo.GetOrderById(id)
 }
 
-func (s *OrderService) GetAllOrders() ([]models.Order, error) {
-	return s.orderRepo.GetAllOrders()
+func (s *OrderService) GetAllOrders(page, pageSize int) ([]models.Order, int, error) {
+	return s.orderRepo.GetAllOrders(page, pageSize)
 }
 
 func (s *OrderService) UpdateOrder(order *models.Order) error {

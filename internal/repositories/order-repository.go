@@ -8,7 +8,7 @@ import (
 type OrderRepository interface {
 	CreateOrder(order *models.Order) (uint, error)
 	GetOrderById(id uint) (*models.Order, error)
-	GetAllOrders() ([]models.Order, error)
+	GetAllOrders(page, pageSize int) ([]models.Order, int, error)
 	UpdateOrder(order *models.Order) error
 	DeleteOrder(id uint) error
 	CreateOrderBook(uint, uint) error
@@ -36,10 +36,21 @@ func (r *orderRepository) GetOrderById(id uint) (*models.Order, error) {
 	return &order, err
 }
 
-func (r *orderRepository) GetAllOrders() ([]models.Order, error) {
+func (r *orderRepository) GetAllOrders(page, pageSize int) ([]models.Order, int, error) {
 	var orders []models.Order
-	err := r.db.Preload("Books").Find(&orders).Error
-	return orders, err
+	var totalOrders int64
+
+	err := r.db.Offset((page - 1) * pageSize).Limit(pageSize).Find(&orders).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	err = r.db.Model(&models.Order{}).Count(&totalOrders).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return orders, int(totalOrders), nil
 }
 
 func (r *orderRepository) UpdateOrder(order *models.Order) error {

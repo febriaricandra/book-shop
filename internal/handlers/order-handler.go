@@ -8,6 +8,7 @@ import (
 
 	"github.com/febriaricandra/book-shop/internal/models"
 	"github.com/febriaricandra/book-shop/internal/services"
+	"github.com/febriaricandra/book-shop/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -108,4 +109,32 @@ func (h *OrderHandler) GetOrderById(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, order)
+}
+
+func (h *OrderHandler) GetAllOrders(c *gin.Context) {
+	pageStr := c.DefaultQuery("page", "1")
+	pageSizeStr := c.DefaultQuery("page_size", "10")
+
+	//convert the page and page size to int
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page number", "status": false})
+		return
+	}
+
+	page_size, err := strconv.Atoi(pageSizeStr)
+	if err != nil || page_size < 1 || page_size > 100 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page size", "status": false})
+		return
+	}
+
+	orders, totalOrders, err := h.orderService.GetAllOrders(page, page_size)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "status": false})
+		return
+	}
+
+	totalItems, totalPages := utils.CalculatePagination(totalOrders, page, page_size)
+
+	c.JSON(http.StatusOK, gin.H{"data": orders, "page": page, "page_size": page_size, "total_items": totalItems, "total_pages": totalPages, "status": true})
 }

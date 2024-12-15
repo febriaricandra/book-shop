@@ -47,5 +47,6 @@ func OrderRouter(router *gin.Engine, h *handlers.OrderHandler) {
 		private.POST("/orders", h.CreateOrder)
 		private.GET("/orders/:id", h.GetOrderById)
 		private.GET("/user-orders", h.GetOrdersForUser)
+		private.GET("/orders", h.GetAllOrders)
 	}
 }
