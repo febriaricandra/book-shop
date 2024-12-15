@@ -45,8 +45,7 @@ func (h *OrderHandler) CreateOrder(c *gin.Context) {
 		Phone      string         `json:"phone" gorm:"type:varchar(20);not null"`
 		TotalPrice float64        `json:"total_price" gorm:"column:total_price;not null"`
 		UserId     uint           `json:"user_id" gorm:"not null"`
-
-		BookIds []int `json:"book_ids"`
+		BookIds    []int          `json:"book_ids"`
 	}
 
 	if err := c.ShouldBindJSON(&orderInput); err != nil {
@@ -67,6 +66,7 @@ func (h *OrderHandler) CreateOrder(c *gin.Context) {
 	order.Phone = orderInput.Phone
 	order.TotalPrice = orderInput.TotalPrice
 
+	// Create the order first
 	orderId, err := h.orderService.CreateOrder(&order)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -74,24 +74,34 @@ func (h *OrderHandler) CreateOrder(c *gin.Context) {
 	}
 
 	slog.Info("Order created successfully", "order_id", orderId)
-	//initiate wait group
-	var wg sync.WaitGroup
 
-	// iterate over the book ids and create order book
+	// Initiate wait group
+	var wg sync.WaitGroup
+	var orderBookErrors []error
+
+	// Iterate over the book ids and create order book
 	for _, bookId := range orderInput.BookIds {
-		//increment the wait group counter
 		wg.Add(1)
-		//create goroutine for each book
 		go func(bookId int) {
-			//decrement the wait group counter when the goroutine completes
 			defer wg.Done()
-			//create order book
+			// Create order book
 			err = h.orderService.CreateOrderBook(orderId, uint(bookId))
 			if err != nil {
+				orderBookErrors = append(orderBookErrors, err)
 				slog.Error("Failed to create order book", "error", err.Error())
 			}
 		}(bookId)
 	}
+
+	// Wait for all goroutines to finish
+	wg.Wait()
+
+	// Check for errors in creating order books
+	if len(orderBookErrors) > 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Some order books could not be created", "details": orderBookErrors})
+		return
+	}
+
 	c.JSON(http.StatusOK, order)
 }
 
