@@ -63,6 +63,7 @@ func (h *OrderHandler) CreateOrder(c *gin.Context) {
 	order.Name = orderInput.Name
 	order.Email = orderInput.Email
 	order.Address = orderInput.Address
+	slog.Info("Order address", "address", order.Address)
 	order.Phone = orderInput.Phone
 	order.TotalPrice = orderInput.TotalPrice
 

@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"log/slog"
+
 	"github.com/febriaricandra/book-shop/internal/models"
 	"gorm.io/gorm"
 )
@@ -40,7 +42,7 @@ func (r *orderRepository) GetAllOrders(page, pageSize int) ([]models.Order, int,
 	var orders []models.Order
 	var totalOrders int64
 
-	err := r.db.Offset((page - 1) * pageSize).Limit(pageSize).Find(&orders).Error
+	err := r.db.Preload("Books").Preload("User").Offset((page - 1) * pageSize).Limit(pageSize).Find(&orders).Error
 	if err != nil {
 		return nil, 0, err
 	}
@@ -63,7 +65,12 @@ func (r *orderRepository) DeleteOrder(id uint) error {
 
 func (r *orderRepository) CreateOrderBook(orderId uint, bookId uint) error {
 	orderBook := models.OrderBook{OrderID: orderId, BookID: bookId}
-	return r.db.Create(&orderBook).Error
+	if err := r.db.Create(&orderBook).Error; err != nil {
+		// Log the error for debugging
+		slog.Error("Failed to create order book", "error", err.Error())
+		return err
+	}
+	return nil
 }
 
 func (r *orderRepository) GetOrdersForUser(userId uint) ([]models.Order, error) {
