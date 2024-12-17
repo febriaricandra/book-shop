@@ -75,6 +75,6 @@ func (r *orderRepository) CreateOrderBook(orderId uint, bookId uint) error {
 
 func (r *orderRepository) GetOrdersForUser(userId uint) ([]models.Order, error) {
 	var orders []models.Order
-	err := r.db.Where("user_id = ?", userId).Preload("Books").Find(&orders).Error
+	err := r.db.Where("user_id = ?", userId).Preload("Books").Preload("User").Find(&orders).Error
 	return orders, err
 }
