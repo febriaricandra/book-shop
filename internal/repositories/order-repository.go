@@ -42,7 +42,7 @@ func (r *orderRepository) GetAllOrders(page, pageSize int) ([]models.Order, int,
 	var orders []models.Order
 	var totalOrders int64
 
-	err := r.db.Preload("Books").Preload("User").Offset((page - 1) * pageSize).Limit(pageSize).Find(&orders).Error
+	err := r.db.Preload("Books").Preload("User").Order("created_at DESC").Offset((page - 1) * pageSize).Limit(pageSize).Find(&orders).Error
 	if err != nil {
 		return nil, 0, err
 	}
@@ -75,6 +75,6 @@ func (r *orderRepository) CreateOrderBook(orderId uint, bookId uint) error {
 
 func (r *orderRepository) GetOrdersForUser(userId uint) ([]models.Order, error) {
 	var orders []models.Order
-	err := r.db.Where("user_id = ?", userId).Preload("Books").Preload("User").Find(&orders).Error
+	err := r.db.Where("user_id = ?", userId).Preload("Books").Order("created_at DESC").Preload("User").Find(&orders).Error
 	return orders, err
 }
