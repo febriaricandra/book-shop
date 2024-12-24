@@ -67,7 +67,7 @@ jobs:
         run: |
           ssh -i private_key -o StrictHostKeyChecking=no $SERVER_USERNAME@$SERVER_IP << 'EOF'
             # Navigate to the deployment directory
-            cd /home/febriaricandra/book-shop
+            cd /home/febriari/book-shop
 
             # Pull the latest changes
             git pull origin main
