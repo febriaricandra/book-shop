@@ -96,6 +96,7 @@ func (h *BookHandler) CreateBook(c *gin.Context) {
 	book.Trending = c.PostForm("trending") == "true"
 	book.OldPrice, _ = strconv.ParseFloat(c.PostForm("old_price"), 64)
 	book.NewPrice, _ = strconv.ParseFloat(c.PostForm("new_price"), 64)
+	book.Weight, _ = strconv.ParseInt(c.PostForm("weight"), 10, 64)
 
 	// Handle file upload
 	file, err := c.FormFile("cover_image")
@@ -181,6 +182,7 @@ func (h *BookHandler) UpdateBook(c *gin.Context) {
 	book.Trending = c.PostForm("trending") == "true"
 	book.OldPrice, _ = strconv.ParseFloat(c.PostForm("old_price"), 64)
 	book.NewPrice, _ = strconv.ParseFloat(c.PostForm("new_price"), 64)
+	book.Weight, _ = strconv.ParseInt(c.PostForm("weight"), 10, 64)
 
 	//hamdle file upload
 	file, err := c.FormFile("cover_image")

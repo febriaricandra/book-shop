@@ -16,8 +16,9 @@ type Order struct {
 	TotalPrice float64 `json:"total_price" gorm:"column:total_price;not null"`
 	UserId     uint    `json:"user_id" gorm:"column:user_id;not null"`
 
-	Books []Book `json:"books" gorm:"many2many:order_books;"` // many-to-many relationship
-	User  User   `json:"user" gorm:"foreignKey:user_id"`
+	Books    []Book   `json:"books" gorm:"many2many:order_books;"` // many-to-many relationship
+	User     User     `json:"user" gorm:"foreignKey:user_id"`
+	Shipping Shipping `json:"shipping" gorm:"foreignKey:order_id"`
 }
 
 func (o *Order) TableName() string {

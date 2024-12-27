@@ -66,6 +66,7 @@ func main() {
 	orderHandler := handlers.NewOrderHandler(orderService)
 	bookHandler := handlers.NewBookHandler(bookService, R2Client, "bookshop", os.Getenv("ENDPOINT_URL"))
 	userHandler := handlers.NewUserHandler(userService)
+	rajaOngkirHandler := handlers.NewRajaOngkirHandler(os.Getenv("RAJAONGKIR_API_KEY"))
 
 	// entry point of the application
 	router := gin.Default()
@@ -84,6 +85,7 @@ func main() {
 	routers.BookRouter(router, bookHandler)
 	routers.UserRouter(router, userHandler)
 	routers.OrderRouter(router, orderHandler)
+	routers.RajaOngkirRouter(router, rajaOngkirHandler)
 
 	router.Use(gin.Logger())
 

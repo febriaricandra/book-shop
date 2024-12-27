@@ -50,3 +50,13 @@ func OrderRouter(router *gin.Engine, h *handlers.OrderHandler) {
 		private.GET("/orders", h.GetAllOrders)
 	}
 }
+
+func RajaOngkirRouter(router *gin.Engine, h *handlers.RajaOngkirHandler) {
+	private := router.Group("/api")
+	private.Use(middlewares.AuthMiddleware())
+	{
+		private.GET("/provinces", h.GetProvinces)
+		private.GET("/cities/:province_id", h.GetCities)
+		private.POST("/cost", h.GetCosts)
+	}
+}
