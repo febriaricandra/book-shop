@@ -39,13 +39,14 @@ func (h *OrderHandler) CreateOrder(c *gin.Context) {
 	var order models.Order
 	var orderInput struct {
 		models.BaseModel
-		Name       string         `json:"name" gorm:"type:varchar(255);not null"`
-		Email      string         `json:"email" gorm:"type:varchar(255);not null"`
-		Address    models.Address `json:"address" gorm:"embedded"`
-		Phone      string         `json:"phone" gorm:"type:varchar(20);not null"`
-		TotalPrice float64        `json:"total_price" gorm:"column:total_price;not null"`
-		UserId     uint           `json:"user_id" gorm:"not null"`
-		BookIds    []int          `json:"book_ids"`
+		Name       string          `json:"name" gorm:"type:varchar(255);not null"`
+		Email      string          `json:"email" gorm:"type:varchar(255);not null"`
+		Address    models.Address  `json:"address" gorm:"embedded"`
+		Phone      string          `json:"phone" gorm:"type:varchar(20);not null"`
+		TotalPrice float64         `json:"total_price" gorm:"column:total_price;not null"`
+		UserId     uint            `json:"user_id" gorm:"not null"`
+		BookIds    []int           `json:"book_ids"`
+		Shipping   models.Shipping `json:"shipping" gorm:"embedded"`
 	}
 
 	if err := c.ShouldBindJSON(&orderInput); err != nil {
@@ -63,6 +64,8 @@ func (h *OrderHandler) CreateOrder(c *gin.Context) {
 	order.Name = orderInput.Name
 	order.Email = orderInput.Email
 	order.Address = orderInput.Address
+	order.Shipping = orderInput.Shipping
+	slog.Info("Order name", "name", order.Shipping)
 	slog.Info("Order address", "address", order.Address)
 	order.Phone = orderInput.Phone
 	order.TotalPrice = orderInput.TotalPrice

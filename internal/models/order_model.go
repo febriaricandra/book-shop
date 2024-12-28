@@ -1,10 +1,16 @@
 package models
 
 type Address struct {
-	City    string `json:"city" gorm:"type:varchar(255);not null"`
-	Country string `json:"country" gorm:"type:varchar(255)"`
-	State   string `json:"state" gorm:"type:varchar(255)"`
-	Zipcode string `json:"zipcode" gorm:"type:varchar(255)"`
+	City     string `json:"city" gorm:"type:varchar(255);not null"`
+	Province string `json:"province" gorm:"type:varchar(255)"`
+	State    string `json:"state" gorm:"type:varchar(255)"`
+	Zipcode  string `json:"zipcode" gorm:"type:varchar(255)"`
+}
+
+type Shipping struct {
+	ShippingType    string `json:"shipping_type" gorm:"type:varchar(255);not null"`
+	ShippingService string `json:"shipping_service" gorm:"type:varchar(255);not null"`
+	ShippingCost    int    `json:"shipping_cost" gorm:"type:int;not null"`
 }
 
 type Order struct {
@@ -18,7 +24,7 @@ type Order struct {
 
 	Books    []Book   `json:"books" gorm:"many2many:order_books;"` // many-to-many relationship
 	User     User     `json:"user" gorm:"foreignKey:user_id"`
-	Shipping Shipping `json:"shipping" gorm:"foreignKey:order_id"`
+	Shipping Shipping `json:"shipping" gorm:"embedded"`
 }
 
 func (o *Order) TableName() string {
