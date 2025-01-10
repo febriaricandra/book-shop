@@ -81,24 +81,31 @@ func (h *OrderHandler) CreateOrder(c *gin.Context) {
 
 	// Initiate wait group
 	var wg sync.WaitGroup
-	var orderBookErrors []error
+	errorChan := make(chan error)
 
 	// Iterate over the book ids and create order book
 	for _, bookId := range orderInput.BookIds {
 		wg.Add(1)
-		go func(bookId int) {
+		go func(bookId int, wg *sync.WaitGroup) {
 			defer wg.Done()
 			// Create order book
 			err = h.orderService.CreateOrderBook(orderId, uint(bookId))
 			if err != nil {
-				orderBookErrors = append(orderBookErrors, err)
+				errorChan <- err
 				slog.Error("Failed to create order book", "error", err.Error())
 			}
-		}(bookId)
+		}(bookId, &wg)
 	}
 
 	// Wait for all goroutines to finish
 	wg.Wait()
+	close(errorChan)
+
+	var orderBookErrors []error
+
+	for err := range errorChan {
+		orderBookErrors = append(orderBookErrors, err)
+	}
 
 	// Check for errors in creating order books
 	if len(orderBookErrors) > 0 {
